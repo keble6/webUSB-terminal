@@ -1,4 +1,9 @@
-
+/* This code is from https://github.com/bsiever/microbit-webusb */
+/* and has been modified to remove the graph functions.
+    The script in the index.html file has been modified to:
+  a) add date & time stamp
+  b) write results to file
+  */
 /*
  * JavaScript functions for interacting with micro:bit microcontrollers over WebUSB
  * (Only works in Chrome browsers;  Pages must be either HTTPS or local)

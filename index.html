@@ -3,80 +3,87 @@
 <head>
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="UTF-8">
-    <title>Micro:bit WebUSB Console</title>
+    <title>micro:bit WebUSB Terminal</title>
 </head>
 
 <body>
-    <div class="box">
-        <div class="row header">
-                <button id="connect" class="button">Connect</button>
-        </div>
-        <div class="row header">
-                <button id="disconnect" class="button">Disconnect All</button>
-        </div>
-        <div class="row header">
-                <button id="send" class="button">Send "Test" to All</button>
-        </div>
-        <div class="row header">
-                <button id="clear" class="button">Clear Console</button>
-        </div>
-
-        <div id="console" class="row content" style="overflow:auto;border:4px solid black;padding:2%">
-            Waiting for connection.
-        </div>
+  <div class="box">
+    <div class="row header">
+      <button id="connect" class="button">Connect</button>
     </div>
+    <div class="row header">
+      <button id="disconnect" class="button">Disconnect All</button>
+    </div>
+    <div class="row header">
+      <button id="clear" class="button">Clear display</button>
+    </div>
+    <div>
+      <a id="download_link" download="results.txt" href=”” >Save results in a file</a>
+    </div>
+
+    <div id="console" class="row content" style="overflow:auto;border:4px solid black;padding:2%">
+            Waiting for connection.
+    </div>
+  </div>
 </body>
 
 <!--  Include the webusb support library  -->
 <script src="ubitwebusb.js"></script>
 
 <script>
+  var text = '';  //for the text file
+  var data, url;
 
-    // Append a line to the console frame
-    function consolePrintln(message) {
-        var con = document.getElementById("console")
-        con.innerHTML += "<br/>"+message
-        con.scrollTop = con.scrollHeight
+  
+  // Append a line to the console frame
+  function consolePrintln(message) {
+    var con = document.getElementById("console");
+    con.innerHTML += "<br/>"+message;
+    con.scrollTop = con.scrollHeight;
+  }
+
+  // List of connected devices (a single value could be used if only connecting to one device)
+  var connectedDevices = []
+
+  // Event call-back handler
+  function uBitEventHandler(reason, device, data) {
+    switch(reason) {
+      case "connected":
+        consolePrintln("<b>Connected!</b>");
+        connectedDevices.push(device)
+      break;
+      case "disconnected":
+        consolePrintln("<b>Disconnected</b>");
+        connectedDevices = connectedDevices.filter( v => v != device);
+      break;
+      case "connection failure":
+        consolePrintln("<b>Connection Failure</b>");
+        break;
+      case "error":
+        consolePrintln("<b>Error</b>");
+      break;
+      case "console":
+        let now = new Date();
+        let date = now.getDate();
+        let month = now.getMonth();
+        let year = now.getFullYear();
+        let hours =now.getHours();
+        let minutes = now.getMinutes();
+        let line = year + "/" + month + "/" + date +" " +hours + ":" + minutes + " " + data.data;
+                consolePrintln(line);
+        text += line; //build up the results
+        textData = new Blob([text], {type: 'text/plain'});
+        url = window.URL.createObjectURL(textData);
+        document.getElementById('download_link').href = url;
+      break;
     }
+  }
 
-    // List of connected devices (a single value could be used if only connecting to one device)
-    var connectedDevices = []
-
-    // Example event call-back handler
-    function uBitEventHandler(reason, device, data) {
-        switch(reason) {
-            case "connected":
-                consolePrintln("<b>Connected!</b>")
-                connectedDevices.push(device)
-                break
-            case "disconnected":
-                consolePrintln("<b>Disconnected</b>")
-                connectedDevices = connectedDevices.filter( v => v != device)
-                break
-            case "connection failure":
-                consolePrintln("<b>Connection Failure</b>")
-                break
-            case "error":
-                consolePrintln("<b>Error</b>")
-                break
-            case "console":
-                let now = new Date();
-                let date = now.getDate();
-                let month = now.getMonth();
-                let year = now.getFullYear();
-                let hours =now.getHours();
-                let minutes = now.getMinutes();
-                consolePrintln(year + "/" + month + "/" + date +" " +hours + ":" + minutes + " " + data.data)
-                break
-        }
-    }
-
-    // Make the "go" button open the request devices box
-    document.getElementById("connect").addEventListener("click", () => uBitConnectDevice(uBitEventHandler))
-    document.getElementById("disconnect").addEventListener("click", () => connectedDevices.forEach(d=>uBitDisconnect(d)))
-    document.getElementById("clear").addEventListener("click", () => { document.getElementById("console").innerHTML = "" })
-    document.getElementById("send").addEventListener("click", () => { connectedDevices.forEach( d=>uBitSend(d, "Test")) })
-
+  // Make the "go" button open the request devices box
+  document.getElementById("connect").addEventListener("click", () => uBitConnectDevice(uBitEventHandler));
+  document.getElementById("disconnect").addEventListener("click", () => connectedDevices.forEach(d=>uBitDisconnect(d)));
+  document.getElementById("clear").addEventListener("click", () => { document.getElementById("console").innerHTML = "" });
+    
 </script>
 
 </html>
