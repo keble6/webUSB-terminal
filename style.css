@@ -13,7 +13,7 @@ body {
 }
 
 .box .row {
-  border: 1px dotted grey;
+  border: none;
 }
 
 .box .row.header {
@@ -31,13 +31,13 @@ body {
 
 /* https://www.w3schools.com/css/css3_buttons.asp */
 .button {
-  background-color: #4CAF50; /* Green */
-  border: none;
+  background-color: #008CBA; /* Blue */
+  border-style: solid;
   color: white;
   padding: 15px 32px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
-  width: 100%;
+  width: 30%;
 }

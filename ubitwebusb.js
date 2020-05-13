@@ -4,7 +4,7 @@
  * (Only works in Chrome browsers;  Pages must be either HTTPS or local)
  */
 
-// Add a delay() method to promises 
+// Add a delay() method to promises
 // NOTE: I found this on-line somewhere but didn't note the source and haven't been able to find it!
 Promise.delay = function(duration){
     return new Promise(function(resolve, reject){
@@ -56,7 +56,7 @@ function uBitOpenDevice(device, callback) {
     let transferLoop = function () {
         device.controlTransferOut(DAPOutReportRequest, Uint8Array.from([0x83])) // DAP ID_DAP_Vendor3: https://github.com/ARMmbed/DAPLink/blob/0711f11391de54b13dc8a628c80617ca5d25f070/source/daplink/cmsis-dap/DAP_vendor.c
           .then(() => device.controlTransferIn(DAPInReportRequest, 64))
-          .then((data) => { 
+          .then((data) => {
             if (data.status != "ok") {
                 return Promise.delay(uBitBadMessageDelay).then(transferLoop);
             }
@@ -77,33 +77,10 @@ function uBitOpenDevice(device, callback) {
             let firstNewline = buffer.indexOf("\n")
             while(firstNewline>=0) {
                 let messageToNewline = buffer.slice(0,firstNewline)
-                let now = new Date() 
-                // Deal with line
-                // If it's a graph/series format, break it into parts
-                let parseResult = parser.exec(messageToNewline)
-                if(parseResult) {
-                    let graph = parseResult[1]
-                    let series = parseResult[2]
-                    let data = parseResult[3]
-                    let callbackType = "graph-event"
-                    // If data is numeric, it's a data message and should be sent as numbers
-                    if(!isNaN(data)) {
-                        callbackType = "graph-data"
-                        data = parseFloat(data)
-                    }
-                    // Build and send the bundle
-                    let dataBundle = {
-                        time: now,
-                        graph: graph, 
-                        series: series, 
-                        data: data
-                    }
-                    callback(callbackType, device, dataBundle)
-                } else {
-                    // Not a graph format.  Send it as a console bundle
-                    let dataBundle = {time: now, data: messageToNewline}
+                let now = new Date()
+                
+                let dataBundle = {time: now, data: messageToNewline}
                     callback("console", device, dataBundle)
-                }
 
                 buffer = buffer.slice(firstNewline+1)  // Advance to after newline
                 firstNewline = buffer.indexOf("\n")    // See if there's more data
@@ -126,14 +103,14 @@ function uBitOpenDevice(device, callback) {
           .then(controlTransferOutFN(Uint8Array.from([0x11, 0x80, 0x96, 0x98, 0]))) // Set Clock: 0x989680 = 10MHz : https://arm-software.github.io/CMSIS_5/DAP/html/group__DAP__SWJ__Clock.html
           .then(controlTransferOutFN(Uint8Array.from([0x13, 0]))) // SWD Configure (1 clock turn around; no wait/fault): https://arm-software.github.io/CMSIS_5/DAP/html/group__DAP__SWD__Configure.html
           .then(controlTransferOutFN(Uint8Array.from([0x82, 0x00, 0xc2, 0x01, 0x00]))) // Vendor Specific command 2 (ID_DAP_Vendor2): https://github.com/ARMmbed/DAPLink/blob/0711f11391de54b13dc8a628c80617ca5d25f070/source/daplink/cmsis-dap/DAP_vendor.c ;  0x0001c200 = 115,200kBps
-          .then(() => { callback("connected", device, null); return Promise.resolve()}) 
+          .then(() => { callback("connected", device, null); return Promise.resolve()})
           .then(transferLoop)
           .catch(error => callback("error", device, error))
 }
 
 /**
- * Disconnect from a device 
- * @param {USBDevice} device to disconnect from 
+ * Disconnect from a device
+ * @param {USBDevice} device to disconnect from
  */
 function uBitDisconnect(device) {
     if(device && device.opened) {
@@ -143,7 +120,7 @@ function uBitDisconnect(device) {
 
 /**
  * Send a string to a specific device
- * @param {USBDevice} device 
+ * @param {USBDevice} device
  * @param {string} data to send (must not include newlines)
  */
 function uBitSend(device, data) {
@@ -162,7 +139,7 @@ function uBitSend(device, data) {
 
 /**
  * Callback for micro:bit events
- * 
+ *
  
    Event data varies based on the event string:
   <ul>
@@ -179,16 +156,16 @@ function uBitSend(device, data) {
  * @param {string} event ("connection failure", "connected", "disconnected", "error", "console", "graph-data", "graph-event" )
  * @param {USBDevice} device triggering the callback
  * @param {*} data (event-specific data object). See list above for variants
- * 
+ *
  */
 
 
 /**
  * Allow users to select a device to connect to.
- * 
+ *
  * @param {uBitEventCallback} callback function for device events
  */
-function uBitConnectDevice(callback) { 
+function uBitConnectDevice(callback) {
     navigator.usb.requestDevice({filters: [{ vendorId: MICROBIT_VENDOR_ID, productId: 0x0204 }]})
         .then(  d => { if(!d.opened) uBitOpenDevice(d, callback)} )
         .catch( () => callback("connection failure", null, null))

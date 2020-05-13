@@ -23,7 +23,7 @@
 
         <div id="console" class="row content" style="overflow:auto;border:4px solid black;padding:2%">
             Waiting for connection.
-        </div>                            
+        </div>
     </div>
 </body>
 
@@ -57,16 +57,16 @@
                 consolePrintln("<b>Connection Failure</b>")
                 break
             case "error":
-                consolePrintln("<b>Error</b>")                
+                consolePrintln("<b>Error</b>")
                 break
             case "console":
-                consolePrintln("Console Data: " + data.data)
-                break
-            case "graph-event":
-                consolePrintln(`Graph Event:  ${data.data} (for ${data.graph}${data.series.length?" / series "+data.series:""})`)
-                break
-            case "graph-data":
-                consolePrintln(`Graph Data: ${data.data} (for ${data.graph}${data.series.length?" / series "+data.series:""})`)
+                let now = new Date();
+                let date = now.getDate();
+                let month = now.getMonth();
+                let year = now.getFullYear();
+                let hours =now.getHours();
+                let minutes = now.getMinutes();
+                consolePrintln(year + "/" + month + "/" + date +" " +hours + ":" + minutes + " " + data.data)
                 break
         }
     }
