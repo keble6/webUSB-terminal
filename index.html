@@ -18,7 +18,7 @@
       <button id="clear" class="button">Clear display</button>
     </div>
     <div>
-      <a id="download_link" download="results.txt" href=”” >Save results in a file</a>
+      <a id="download_link" download="results.csv" href=”” >Save results in a file</a>
     </div>
 
     <div id="console" class="row content" style="overflow:auto;border:4px solid black;padding:2%">
@@ -31,6 +31,7 @@
 <script src="ubitwebusb.js"></script>
 
 <script>
+// file save code from https://shinglyu.com/web/2019/02/09/js_download_as_file.html
   var text = '';  //for the text file
   var data, url;
 
@@ -72,7 +73,7 @@
         let line = year + "/" + month + "/" + date +" " +hours + ":" + minutes + " " + data.data;
                 consolePrintln(line);
         text += line; //build up the results
-        textData = new Blob([text], {type: 'text/plain'});
+        textData = new Blob([text], {type: 'text/csv'}); //csv should work better for import into spreadsheet
         url = window.URL.createObjectURL(textData);
         document.getElementById('download_link').href = url;
       break;
